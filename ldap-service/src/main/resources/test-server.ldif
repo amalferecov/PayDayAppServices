@@ -1,0 +1,28 @@
+dn: dc=ibar,dc=az
+objectclass: top
+objectclass: domain
+objectclass: extensibleObject
+dc: ibar
+
+dn: ou=groups,dc=ibar,dc=az
+objectclass: top
+objectclass: organizationalUnit
+ou: groups
+
+
+dn: ou=people,dc=ibar,dc=az
+objectclass: top
+objectclass: organizationalUnit
+ou: people
+
+
+dn: uid=heisenberg,ou=people,dc=ibar,dc=az
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Amal Faraj
+sn: Faraj
+uid: heisenberg
+userPassword: $2a$10$c6bSeWPhg06xB1lvmaWNNe4NROmZiSpYhlocU/98HNr2MhIOiSt36
+
