@@ -1,0 +1,285 @@
+swagger: "2.0"
+info:
+  description: "This document for PayDay app backend services"
+  version: "1.0.0"
+  title: "PayDay App"
+  contact:
+    email: "amalferecov@gmail.com"
+tags:
+
+- name: "New User adding"
+  description: "First you must add user to mongodb. Then you can sign in and get auth key. Username and password authorizing with LDAP service. For test i add 1 person. username=heisenberg and password=saymayname"
+
+- name: "AUTH"
+  description: "When you send username and password for login service will check your credentials from LDAB server. if all authorization OK service will return JWT token. After it when you will send request to service you must add this token (Bearer token) in header"
+- name: "Getting user details"
+  description: "Getting user details sending user national id"
+- name: "Apply for a loan"
+  description: "User apply for a new loan giving national id number, amount and period in months"
+- name: "Getting user details from token"
+  description: "For all request you dont need to send user details. Service may take all parameter from token."
+- name: "Income data"
+  description: "Income data can give last 12 month income data. You must just send user national id. Service will cache last 12 month. Service will refresh data every month if its needed"
+
+
+paths:
+  /localhost:8765/payday-income-info/income/get-last/{nationalID}:
+    get:
+      summary: "Service will return last income data"
+      tags:
+        - "Income data"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: nationalID
+          in: path
+          description: "User national id"
+          required: true
+          type: integer
+      responses:
+        200:
+          description: OK (Will return list of data)
+    
+
+  /localhost:8765/payday-loan-request/loan/get/{nationalID}:
+    get:
+      tags:
+        - "Getting user loan requests list"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: nationalID
+          in: path
+          description: "User national id"
+          required: true
+          type: integer
+      responses:
+        200:
+          description: OK
+        204:
+          description: Content not found
+        500:
+          description: Internal server error
+        
+
+  /localhost:8765/payday-loan-request/loan/new:
+    post:
+      tags:
+        - "Apply for a loan"
+      summary: "User can apply for new loan from app"
+      # description: 
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Needed parameters for new loan"
+          required: true
+          schema:
+            type: object
+            properties:
+              nationalID:
+                type: string
+                example: 123ddsdf
+              amount:
+                type: integer
+                example: 13000
+              month:
+                type: integer
+                example: 36
+      responses:
+        200:
+          description: OK
+        204:
+          description: Internal Server Error
+    
+    
+
+
+  /localhost:8765/payday-user-details/user/get/{nationalID}:
+    get:
+      tags:
+        - "Getting user details"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: nationalID
+          in: path
+          description: "User national id"
+          required: true
+          type: integer
+          
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              nationalID:
+                type: string
+                example: 123ddsdf
+              name:
+                type: string
+                example: Amal
+              surname:
+                type: string
+                example: Farajov
+              address:
+                type: string
+                example: Baku
+              age:
+                type: integer
+                example: 34
+              username:
+                type: string
+                example: heisenberg
+              password:
+                type: string
+                example: saymayname
+              email:
+                type: string
+                example: amalferecov@gmail.com
+              lastPasswordResetDate:
+                type: string
+                example: '2020-02-20'
+              enable:
+                type: boolean
+                example: true
+        500:
+          description: Internal Server Error  
+        204:
+          description: Content not found
+      
+  /localhost:8090/user/save:
+    post:
+      tags:
+      - "New User adding"
+      summary: "Adding new user to mangodb"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "User details need to add"
+          required: true
+          schema:
+            type: object
+            properties:
+              nationalID:
+                type: string
+                example: 123ddsdf
+              name:
+                type: string
+                example: Amal
+              surname:
+                type: string
+                example: Farajov
+              address:
+                type: string
+                example: Baku
+              age:
+                type: integer
+                example: 34
+              username:
+                type: string
+                example: heisenberg
+              password:
+                type: string
+                example: saymayname
+              email:
+                type: string
+                example: amalferecov@gmail.com
+              lastPasswordResetDate:
+                type: string
+                example: '2020-02-20'
+              enable:
+                type: boolean
+                example: true
+            
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              nationalID:
+                type: string
+                example: 123ddsdf
+              name:
+                type: string
+                example: Amal
+              surname:
+                type: string
+                example: Farajov
+              address:
+                type: string
+                example: Baku
+              age:
+                type: integer
+                example: 34
+              username:
+                type: string
+                example: heisenberg
+              password:
+                type: string
+                example: saymayname
+              email:
+                type: string
+                example: amalferecov@gmail.com
+              lastPasswordResetDate:
+                type: string
+                example: '2020-02-20'
+              enable:
+                type: boolean
+                example: true
+        500:
+          description: Internal Server Error
+        
+  /localhost:8765/auth:
+    post:
+      tags:
+      - "AUTH"
+      summary: "Trying to sing in"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "User details need to add"
+          required: true
+          schema:
+            type: object
+            properties:
+              username:
+                type: string
+                example: heisenberg
+              password:
+                type: string
+                example: saymayname
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+                example: "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJoZWlzZW5iZXJnIiwic2NvcGVzIjpbInVzZXJfcm9sbCJdLCJleHAiOjE1ODM4NTAwMDYsImlhdCI6MTU4Mzc5MDAwNn0.pehYL77PwuoxVDCQ2-lGZOVfti041MC0kbR5Ic-7ZNh0jkga6jhXSsR1CZhxdDNb9kIMzqhCYtRP79Inu77Ofw"
+        401:
+          description: UnAuthorized
+  
+  

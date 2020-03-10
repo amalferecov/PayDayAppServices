@@ -1,0 +1,193 @@
+version: '3.7'
+services:
+
+
+#      __ __    _              __               
+#   / // /__ (_)__ ___ ___  / /  ___ _______ _
+#  / _  / -_) (_-</ -_) _ \/ _ \/ -_) __/ _ `/
+# /_//_/\__/_/___/\__/_//_/_.__/\__/_/  \_, / 
+#                                      /___/  
+  rabbitmq:
+    image: rabbitmq:3.5.3-management
+    ports:
+      - "5672"
+    restart: always
+    networks:
+      - payday-network
+
+
+
+  db:
+    image: mongo:3.6
+    container_name: "db"
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+    volumes:
+      - ./data/db:/data/db
+    command: mongod --smallfiles --logpath=/dev/null
+    restart: always
+    networks:
+      - payday-network
+
+
+  redis-db:
+    image: redis:3.2-alpine
+    restart: always
+    volumes:
+      - redis_data:/data
+    # ports:
+    #   - "6379"
+    networks:
+      - payday-network
+
+
+
+
+# We can get all properties file from git using spring-cloud-config-server
+
+# spring-cloud-config-server
+  # spring-cloud:
+  #   image: amalferecov/spring-cloud-config-server:0.0.1
+  #   ports:
+  #     - "8888"
+  #   restart: always
+  #   depends_on:
+  #    - db
+  #   networks:
+  #    - payday-network
+
+
+
+
+
+#eureke-server
+  naming-server:
+    image: amalfarajov/eureka-naming-server:0.0.1
+    environment:
+      JAVA_OPTS: "-Xms64m -Xmx128m"
+    ports:
+      - "8761:8761"
+    restart: always
+    networks:
+      - payday-network
+
+
+
+
+
+  zipkin-server:
+    image: openzipkin/zipkin
+    environment:
+      STORAGE_TYPE: mem
+      RABBIT_URI: amqp://guest:guest@rabbitmq:5672
+    restart: always
+    depends_on:
+      - rabbitmq
+    networks:
+      - payday-network
+
+
+
+
+
+  zuul-gateway:
+    image: amalfarajov/zuul-gateway:0.0.7
+    environment:
+      # EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://localhost:8761/eureka
+      RABBIT_URI: amqp://guest:guest@rabbitmq:5672
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+    ports:
+      - "8765:8765"
+    restart: always
+    depends_on:
+      - naming-server
+      - rabbitmq
+      - zipkin-server
+    networks:
+      - payday-network
+
+
+
+
+
+  payday-ldap-service:
+    image: amalfarajov/payday-ldap-service:0.0.1
+    environment:
+      RABBIT_URI: amqp://guest:guest@rabbitmq:5672
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+    restart: always
+    depends_on:
+      # - db
+      # - spring-cloud
+      - naming-server
+      - rabbitmq
+      - redis-db
+      - zipkin-server
+      - zuul-gateway
+    networks:
+      - payday-network
+
+  payday-income-info:
+    image: amalfarajov/payday-income-info:0.0.1
+    environment:
+      RABBIT_URI: amqp://guest:guest@rabbitmq:5672
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+    restart: always
+    depends_on:
+      # - db
+      # - spring-cloud
+      - naming-server
+      - rabbitmq
+      - redis-db
+      - zipkin-server
+      - zuul-gateway
+    networks:
+      - payday-network
+
+  payday-user-details:
+    image: amalfarajov/payday-user-details:0.0.2
+    environment:
+      RABBIT_URI: amqp://guest:guest@rabbitmq:5672
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+    restart: always
+    ports:
+      - "8090:8090"
+    # links:
+    #   - db
+    depends_on:
+      - db
+      # - spring-cloud
+      - naming-server
+      - rabbitmq
+      - redis-db
+      - zipkin-server
+      - zuul-gateway
+    networks:
+      - payday-network
+
+
+  payday-loan-request:
+    image: amalfarajov/payday-loan-request:0.0.1
+    environment:
+      RABBIT_URI: amqp://guest:guest@rabbitmq:5672
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+    restart: always
+    depends_on:
+      - db
+      # - spring-cloud
+      - naming-server
+      - rabbitmq
+      - redis-db
+      - zipkin-server
+      - zuul-gateway
+    networks:
+      - payday-network
+
+volumes:
+  redis_data:
+
+networks:
+  payday-network:
